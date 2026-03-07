@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Windows NT 4.0 — WinVault</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=IBM+Plex+Mono:wght@400;500&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+  
+<style>
+  :root {
+    --bg: #0a0c10; --surface: #111318; --surface2: #181c24;
+    --border: #1e2330; --accent: #3b82f6; --accent2: #60a5fa;
+    --accent-glow: rgba(59,130,246,0.18); --text: #e8ecf4;
+    --muted: #7a8499; --tag: #1a2236; --tag-text: #60a5fa; --nav-h: 64px;
+  }
+  [data-theme="light"] {
+    --bg: #f0f4fb; --surface: #ffffff; --surface2: #e8edf7;
+    --border: #d0d8e8; --accent: #2563eb; --accent2: #3b82f6;
+    --accent-glow: rgba(37,99,235,0.1); --text: #111827;
+    --muted: #5a6580; --tag: #dbeafe; --tag-text: #1d4ed8;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; overflow-x: hidden; }
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    height: var(--nav-h); background: rgba(10,12,16,0.85);
+    backdrop-filter: blur(16px); border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; padding: 0 2rem; gap: 2rem;
+  }
+  [data-theme="light"] nav { background: rgba(240,244,251,0.88); }
+  .nav-brand { font-family:'Syne',sans-serif; font-weight:800; font-size:1.2rem; color:var(--accent2); text-decoration:none; display:flex; align-items:center; gap:.5rem; letter-spacing:-.02em; white-space:nowrap; }
+  .nav-brand span { color:var(--text); }
+  .nav-links { display:flex; align-items:center; gap:.25rem; list-style:none; flex:1; }
+  .nav-links > li { position:relative; }
+  .nav-links a { font-family:'DM Sans',sans-serif; font-size:.875rem; font-weight:500; color:var(--muted); text-decoration:none; padding:.45rem .75rem; border-radius:8px; transition:color .2s,background .2s; display:block; white-space:nowrap; }
+  .nav-links a:hover { color:var(--text); background:var(--surface2); }
+  .nav-links a.active { color:var(--accent2); }
+  .dropdown { position:relative; }
+  .dropdown-toggle { cursor:pointer; user-select:none; }
+  .dropdown-menu { display:none; position:absolute; top:calc(100% + 8px); left:0; background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:.5rem; min-width:200px; box-shadow:0 20px 60px rgba(0,0,0,.4); }
+  .dropdown:hover .dropdown-menu { display:block; }
+  .dropdown-menu a { font-size:.82rem; padding:.4rem .7rem; border-radius:7px; }
+  .nav-right { margin-left:auto; display:flex; align-items:center; gap:.75rem; }
+  .theme-btn { background:var(--surface2); border:1px solid var(--border); color:var(--text); width:36px; height:36px; border-radius:8px; cursor:pointer; font-size:1rem; display:flex; align-items:center; justify-content:center; transition:background .2s; }
+  .theme-btn:hover { background:var(--surface); }
+  .hamburger { display:none; flex-direction:column; gap:5px; background:none; border:none; cursor:pointer; padding:.5rem; }
+  .hamburger span { display:block; width:22px; height:2px; background:var(--text); border-radius:2px; }
+  .mobile-menu { display:none; position:fixed; top:var(--nav-h); left:0; right:0; background:var(--surface); border-bottom:1px solid var(--border); padding:1rem 1.5rem; z-index:99; max-height:calc(100vh - var(--nav-h)); overflow-y:auto; }
+  .mobile-menu.open { display:block; }
+  .mobile-menu a { display:block; padding:.55rem .75rem; color:var(--muted); text-decoration:none; font-size:.9rem; border-radius:8px; }
+  .mobile-menu a:hover { color:var(--text); background:var(--surface2); }
+  .mobile-section { font-family:'Syne',sans-serif; font-size:.7rem; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--accent2); padding:.75rem .75rem .25rem; margin-top:.5rem; }
+
+  /* Page header */
+  .page-hero { padding:calc(var(--nav-h) + 3.5rem) 2rem 2.5rem; max-width:1100px; margin:0 auto; }
+  .breadcrumb { font-family:'IBM Plex Mono',monospace; font-size:.72rem; color:var(--muted); margin-bottom:1rem; display:flex; align-items:center; gap:.5rem; flex-wrap:wrap; }
+  .breadcrumb a { color:var(--accent2); text-decoration:none; }
+  .breadcrumb a:hover { text-decoration:underline; }
+  .page-eyebrow { font-family:'IBM Plex Mono',monospace; font-size:.7rem; letter-spacing:.12em; text-transform:uppercase; color:var(--accent2); margin-bottom:.6rem; }
+  .page-title { font-family:'Syne',sans-serif; font-size:clamp(2rem,4vw,3rem); font-weight:800; letter-spacing:-.03em; margin-bottom:.75rem; }
+  .page-desc { font-size:1rem; color:var(--muted); max-width:620px; line-height:1.7; }
+
+  /* Cards grid */
+  .cards-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:1rem; max-width:1100px; margin:0 auto; padding:0 2rem 4rem; }
+  .os-card { background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:1.5rem; text-decoration:none; display:flex; flex-direction:column; gap:.6rem; transition:border-color .2s,transform .22s,box-shadow .22s; position:relative; overflow:hidden; }
+  .os-card::before { content:''; position:absolute; inset:0; background:linear-gradient(135deg,var(--accent-glow) 0%,transparent 60%); opacity:0; transition:opacity .3s; }
+  .os-card:hover { border-color:var(--accent); transform:translateY(-4px); box-shadow:0 16px 50px rgba(0,0,0,.35); }
+  .os-card:hover::before { opacity:1; }
+  .os-card .icon { font-size:2rem; }
+  .os-card .name { font-family:'Syne',sans-serif; font-weight:700; font-size:1.05rem; color:var(--text); }
+  .os-card .meta { font-family:'IBM Plex Mono',monospace; font-size:.72rem; color:var(--tag-text); background:var(--tag); padding:.2rem .55rem; border-radius:5px; display:inline-block; }
+  .os-card .desc { font-size:.82rem; color:var(--muted); line-height:1.55; }
+  .os-card .arrow { margin-top:auto; font-size:.85rem; color:var(--accent2); font-weight:600; }
+
+  /* Detail page */
+  .detail-wrap { max-width:860px; margin:0 auto; padding:0 2rem 5rem; }
+  .detail-wrap h2 { font-family:'Syne',sans-serif; font-size:1.4rem; font-weight:700; margin:2.5rem 0 1rem; }
+  .detail-wrap p { color:var(--muted); line-height:1.75; margin-bottom:1rem; font-size:.95rem; }
+  .detail-wrap ul, .detail-wrap ol { color:var(--muted); padding-left:1.5rem; line-height:1.9; font-size:.95rem; margin-bottom:1rem; }
+  .detail-wrap li { margin-bottom:.25rem; }
+  .video-embed { background:var(--surface); border:1px solid var(--border); border-radius:16px; aspect-ratio:16/9; display:flex; align-items:center; justify-content:center; flex-direction:column; gap:.75rem; margin:1.5rem 0; color:var(--muted); font-size:.9rem; }
+  .video-embed .play-icon { font-size:3rem; }
+  .specs-table { width:100%; border-collapse:collapse; margin:1rem 0 1.5rem; font-size:.88rem; }
+  .specs-table th { text-align:left; padding:.6rem .9rem; background:var(--surface2); color:var(--muted); font-family:'IBM Plex Mono',monospace; font-size:.72rem; letter-spacing:.08em; text-transform:uppercase; }
+  .specs-table td { padding:.6rem .9rem; border-top:1px solid var(--border); color:var(--text); }
+  .specs-table tr:hover td { background:var(--surface2); }
+  .nav-pills { display:flex; gap:.6rem; flex-wrap:wrap; margin:2rem 0; }
+  .nav-pill { display:inline-flex; align-items:center; gap:.4rem; padding:.45rem 1rem; background:var(--surface); border:1px solid var(--border); border-radius:8px; text-decoration:none; font-size:.85rem; color:var(--muted); transition:all .18s; }
+  .nav-pill:hover { border-color:var(--accent); color:var(--accent2); }
+  .nav-pill.prev::before { content:'←'; }
+  .nav-pill.next::after { content:'→'; }
+
+  /* About */
+  .about-wrap { max-width:760px; margin:0 auto; padding:0 2rem 5rem; }
+  .about-wrap p { color:var(--muted); line-height:1.8; font-size:.97rem; margin-bottom:1.25rem; }
+  .about-wrap h2 { font-family:'Syne',sans-serif; font-size:1.3rem; font-weight:700; margin:2rem 0 .75rem; }
+  .profile-card { background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:2rem; display:flex; gap:1.5rem; align-items:center; margin-bottom:2rem; flex-wrap:wrap; }
+  .avatar { width:72px; height:72px; border-radius:50%; background:var(--accent); display:flex; align-items:center; justify-content:center; font-size:2rem; flex-shrink:0; }
+  .profile-info h3 { font-family:'Syne',sans-serif; font-weight:700; font-size:1.15rem; }
+  .profile-info p { color:var(--muted); font-size:.88rem; margin-top:.25rem; }
+
+  /* footer */
+  footer { background:var(--surface); border-top:1px solid var(--border); padding:3rem 2rem 1.5rem; margin-top:2rem; }
+  .footer-inner { max-width:1100px; margin:0 auto; display:grid; grid-template-columns:2fr 1fr 1fr 1fr; gap:2.5rem; }
+  .footer-brand p { font-size:.85rem; color:var(--muted); margin-top:.6rem; line-height:1.6; max-width:260px; }
+  .footer-col h4 { font-family:'Syne',sans-serif; font-size:.82rem; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:var(--muted); margin-bottom:.8rem; }
+  .footer-col ul { list-style:none; }
+  .footer-col li { margin-bottom:.4rem; }
+  .footer-col a { color:var(--muted); text-decoration:none; font-size:.85rem; transition:color .18s; }
+  .footer-col a:hover { color:var(--accent2); }
+  .footer-bottom { max-width:1100px; margin:2rem auto 0; padding-top:1.5rem; border-top:1px solid var(--border); display:flex; justify-content:space-between; align-items:center; font-size:.8rem; color:var(--muted); flex-wrap:wrap; gap:.5rem; }
+  .scroll-top { position:fixed; bottom:1.5rem; right:1.5rem; background:var(--accent); color:#fff; border:none; width:42px; height:42px; border-radius:10px; cursor:pointer; font-size:1rem; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 20px rgba(59,130,246,.4); transition:opacity .3s,transform .3s; opacity:0; pointer-events:none; }
+  .scroll-top.visible { opacity:1; pointer-events:auto; }
+  .scroll-top:hover { transform:translateY(-2px); }
+  .fade-in { opacity:0; transform:translateY(20px); transition:opacity .6s ease,transform .6s ease; }
+  .fade-in.visible { opacity:1; transform:none; }
+  @media(max-width:900px){ .nav-links{display:none;} .hamburger{display:flex;} }
+  @media(max-width:768px){ .footer-inner{grid-template-columns:1fr 1fr;} .cards-grid{grid-template-columns:1fr 1fr;} }
+  @media(max-width:480px){ .footer-inner{grid-template-columns:1fr;} .cards-grid{grid-template-columns:1fr;} }
+</style>
+
+</head>
+<body>
+
+<nav>
+  <a class="nav-brand" href="../index.html">⚙ <span>WinVault</span></a>
+  <ul class="nav-links">
+    <li><a href="../index.html" >Home</a></li>
+    <li class="dropdown">
+      <a class="dropdown-toggle nav-links active">💻 Windows OS ▾</a>
+      <div class="dropdown-menu"><a href="../windows-os/windows-nt-4.html">Windows NT 4.0</a>
+<a href="../windows-os/windows-95.html">Windows 95</a>
+<a href="../windows-os/windows-98.html">Windows 98</a>
+<a href="../windows-os/windows-2000.html">Windows 2000</a>
+<a href="../windows-os/windows-me.html">Windows ME</a>
+<a href="../windows-os/windows-xp.html">Windows XP</a>
+<a href="../windows-os/windows-vista.html">Windows Vista</a>
+<a href="../windows-os/windows-7.html">Windows 7</a>
+<a href="../windows-os/windows-8.html">Windows 8</a>
+<a href="../windows-os/windows-10.html">Windows 10</a>
+<a href="../windows-os/windows-11.html">Windows 11</a></div>
+    </li>
+    <li class="dropdown">
+      <a class="dropdown-toggle">⚙ Windows Server ▾</a>
+      <div class="dropdown-menu"><a href="../windows-server/windows-nt-4-server.html">Windows NT 4.0 Server</a>
+<a href="../windows-server/windows-2000-server.html">Windows 2000 Server</a>
+<a href="../windows-server/windows-server-2003.html">Windows Server 2003</a>
+<a href="../windows-server/windows-server-2008-r2.html">Windows Server 2008 R2</a></div>
+    </li>
+    <li class="dropdown">
+      <a class="dropdown-toggle">📝 Activities ▾</a>
+      <div class="dropdown-menu"><a href="../activities/product-key-multiple-users.html">Product Key & Multiple Users</a>
+<a href="../activities/adding-40-users.html">Adding 40 Users</a>
+<a href="../activities/adding-dhcp-role.html">Adding DHCP Role</a>
+<a href="../activities/raid.html">RAID Configuration</a>
+<a href="../activities/file-services.html">File Services</a>
+<a href="../activities/application-web-server.html">Application & Web Server</a>
+<a href="../activities/group-policy.html">Group Policy</a></div>
+    </li>
+    <li><a href="../about.html" >👤 About</a></li>
+  </ul>
+  <div class="nav-right">
+    <button class="theme-btn" id="themeBtn">☾</button>
+    <button class="hamburger" id="hamburger"><span></span><span></span><span></span></button>
+  </div>
+</nav>
+<div class="mobile-menu" id="mobileMenu">
+  <a href="../index.html">🏠 Home</a>
+  <div class="mobile-section">Windows OS</div><a href="../windows-os/windows-nt-4.html">Windows NT 4.0</a>
+<a href="../windows-os/windows-95.html">Windows 95</a>
+<a href="../windows-os/windows-98.html">Windows 98</a>
+<a href="../windows-os/windows-2000.html">Windows 2000</a>
+<a href="../windows-os/windows-me.html">Windows ME</a>
+<a href="../windows-os/windows-xp.html">Windows XP</a>
+<a href="../windows-os/windows-vista.html">Windows Vista</a>
+<a href="../windows-os/windows-7.html">Windows 7</a>
+<a href="../windows-os/windows-8.html">Windows 8</a>
+<a href="../windows-os/windows-10.html">Windows 10</a>
+<a href="../windows-os/windows-11.html">Windows 11</a>
+  <div class="mobile-section">Windows Server</div><a href="../windows-server/windows-nt-4-server.html">Windows NT 4.0 Server</a>
+<a href="../windows-server/windows-2000-server.html">Windows 2000 Server</a>
+<a href="../windows-server/windows-server-2003.html">Windows Server 2003</a>
+<a href="../windows-server/windows-server-2008-r2.html">Windows Server 2008 R2</a>
+  <div class="mobile-section">Activities</div><a href="../activities/product-key-multiple-users.html">Product Key & Multiple Users</a>
+<a href="../activities/adding-40-users.html">Adding 40 Users</a>
+<a href="../activities/adding-dhcp-role.html">Adding DHCP Role</a>
+<a href="../activities/raid.html">RAID Configuration</a>
+<a href="../activities/file-services.html">File Services</a>
+<a href="../activities/application-web-server.html">Application & Web Server</a>
+<a href="../activities/group-policy.html">Group Policy</a>
+  <a href="../about.html" style="margin-top:.75rem">👤 About</a>
+</div>
+
+
+<div class="page-hero fade-in">
+  <div class="breadcrumb"><a href="../index.html">Home</a> / <a href="../windows-os.html">Windows OS</a> / Windows NT 4.0</div>
+  <div class="page-eyebrow">💻 Windows OS · 1996</div>
+  <h1 class="page-title">💾 Windows NT 4.0</h1>
+  <p class="page-desc">The foundation of modern Windows networking</p>
+</div>
+<div class="detail-wrap fade-in">
+  <div class="video-embed">
+    <div class="play-icon">▶️</div>
+    <p>Video tutorial for Windows NT 4.0 installation</p>
+    <small style="color:var(--muted);font-size:.8rem">Embed your YouTube or local video here</small>
+  </div>
+  <h2>Overview</h2>
+  <p>Windows NT 4.0 was released by Microsoft in 1996. The foundation of modern Windows networking. This tutorial walks you through the complete installation process from boot media creation to first login.</p>
+  <h2>System Requirements</h2>
+  <table class="specs-table">
+    <tr><th>Component</th><th>Minimum</th><th>Recommended</th></tr>
+    <tr><td>Processor</td><td>Varies by version</td><td>See Microsoft docs</td></tr>
+    <tr><td>RAM</td><td>Varies by version</td><td>See Microsoft docs</td></tr>
+    <tr><td>Storage</td><td>Varies by version</td><td>See Microsoft docs</td></tr>
+    <tr><td>Display</td><td>800×600</td><td>1024×768 or higher</td></tr>
+  </table>
+  <h2>Installation Steps</h2>
+  <ol>
+    <li>Download the ISO or prepare installation media</li>
+    <li>Boot your system from the installation media</li>
+    <li>Follow the on-screen setup wizard</li>
+    <li>Enter your product key when prompted</li>
+    <li>Choose installation type (Clean Install / Upgrade)</li>
+    <li>Select your partition and begin installation</li>
+    <li>Wait for installation to complete and system to restart</li>
+    <li>Complete the Out-of-Box Experience (OOBE) setup</li>
+    <li>Install drivers and updates</li>
+  </ol>
+  <h2>Post-Installation Tips</h2>
+  <ul>
+    <li>Update Windows immediately after installation</li>
+    <li>Install hardware drivers from manufacturer websites</li>
+    <li>Configure user accounts and security settings</li>
+    <li>Set up your preferred applications</li>
+  </ul>
+  <div class="nav-pills"><a href="windows-95.html" class="nav-pill next">Windows 95</a></div>
+</div>
+
+
+<footer>
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <a class="nav-brand" href="index.html" style="font-size:1.1rem">⚙ <span>WinVault</span></a>
+      <p>Your vault for Windows OS and Server installation tutorials — built for students and IT professionals.</p>
+    </div>
+    <div class="footer-col"><h4>Quick Links</h4><ul>
+      <li><a href="index.html">Home</a></li><li><a href="windows-os.html">Windows OS</a></li>
+      <li><a href="windows-server.html">Windows Server</a></li><li><a href="activities.html">Activities</a></li>
+      <li><a href="about.html">About</a></li></ul></div>
+    <div class="footer-col"><h4>Popular</h4><ul>
+      <li><a href="windows-os/windows-xp.html">Windows XP</a></li>
+      <li><a href="windows-os/windows-10.html">Windows 10</a></li>
+      <li><a href="windows-os/windows-11.html">Windows 11</a></li>
+      <li><a href="windows-server/windows-server-2008-r2.html">Server 2008 R2</a></li></ul></div>
+    <div class="footer-col"><h4>Activities</h4><ul>
+      <li><a href="activities/adding-dhcp-role.html">DHCP Role</a></li>
+      <li><a href="activities/raid.html">RAID</a></li>
+      <li><a href="activities/file-services.html">File Services</a></li>
+      <li><a href="activities/group-policy.html">Group Policy</a></li></ul></div>
+  </div>
+  <div class="footer-bottom">
+    <span>© 2026 WinVault. All rights reserved. Built for educational purposes.</span>
+    <a href="#" style="color:var(--accent2);text-decoration:none;font-size:.8rem">⇧ Back to top</a>
+  </div>
+</footer>
+<button class="scroll-top" id="scrollTop">⇧</button>
+<script>
+  document.getElementById('themeBtn').addEventListener('click',()=>{
+    const h=document.documentElement,d=h.getAttribute('data-theme')==='dark';
+    h.setAttribute('data-theme',d?'light':'dark');
+    document.getElementById('themeBtn').textContent=d?'☀':'☾';
+  });
+  document.getElementById('hamburger').addEventListener('click',()=>document.getElementById('mobileMenu').classList.toggle('open'));
+  const st=document.getElementById('scrollTop');
+  window.addEventListener('scroll',()=>st.classList.toggle('visible',window.scrollY>300));
+  st.addEventListener('click',()=>window.scrollTo({top:0,behavior:'smooth'}));
+  new IntersectionObserver((es)=>es.forEach(e=>{if(e.isIntersecting)e.target.classList.add('visible');}),{threshold:.1})
+    .observe && document.querySelectorAll('.fade-in').forEach(el=>new IntersectionObserver((es)=>es.forEach(e=>{if(e.isIntersecting)e.target.classList.add('visible');}),{threshold:.1}).observe(el));
+</script>
+
+</body>
+</html>
