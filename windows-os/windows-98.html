@@ -38,8 +38,9 @@
   .nav-links a.active { color:var(--accent2); }
   .dropdown { position:relative; }
   .dropdown-toggle { cursor:pointer; user-select:none; }
-  .dropdown-menu { display:none; position:absolute; top:calc(100% + 8px); left:0; background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:.5rem; min-width:200px; box-shadow:0 20px 60px rgba(0,0,0,.4); }
+  .dropdown-menu { display:none; position:absolute; top:calc(100% + 8px); left:0; background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:.5rem; min-width:200px; box-shadow:0 20px 60px rgba(0,0,0,.4); z-index:1000; }
   .dropdown:hover .dropdown-menu { display:block; }
+  .dropdown.active .dropdown-menu { display:block; }
   .dropdown-menu a { font-size:.82rem; padding:.4rem .7rem; border-radius:7px; }
   .nav-right { margin-left:auto; display:flex; align-items:center; gap:.75rem; }
   .theme-btn { background:var(--surface2); border:1px solid var(--border); color:var(--text); width:36px; height:36px; border-radius:8px; cursor:pointer; font-size:1rem; display:flex; align-items:center; justify-content:center; transition:background .2s; }
@@ -278,6 +279,32 @@
     document.getElementById('themeBtn').textContent=d?'☀':'☾';
   });
   document.getElementById('hamburger').addEventListener('click',()=>document.getElementById('mobileMenu').classList.toggle('open'));
+  
+  // Dropdown functionality
+  const dropdowns = document.querySelectorAll('.dropdown');
+  dropdowns.forEach(dropdown => {
+    const toggle = dropdown.querySelector('.dropdown-toggle');
+    if (toggle) {
+      toggle.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        // Close all other dropdowns
+        dropdowns.forEach(d => {
+          if (d !== dropdown) d.classList.remove('active');
+        });
+        
+        // Toggle current dropdown
+        dropdown.classList.toggle('active');
+      });
+    }
+  });
+  
+  // Close dropdowns when clicking outside
+  document.addEventListener('click', () => {
+    dropdowns.forEach(dropdown => dropdown.classList.remove('active'));
+  });
+  
   const st=document.getElementById('scrollTop');
   window.addEventListener('scroll',()=>st.classList.toggle('visible',window.scrollY>300));
   st.addEventListener('click',()=>window.scrollTo({top:0,behavior:'smooth'}));
