@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>PART 1: DOMAIN CONTROLLER — WinVault</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=IBM+Plex+Mono:wght@400;500&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+  
+<style>
+  :root {
+    --bg: #0a0c10; --surface: #111318; --surface2: #181c24;
+    --border: #1e2330; --accent: #3b82f6; --accent2: #60a5fa;
+    --accent-glow: rgba(59,130,246,0.18); --text: #e8ecf4;
+    --muted: #7a8499; --tag: #1a2236; --tag-text: #60a5fa; --nav-h: 64px;
+  }
+  [data-theme="light"] {
+    --bg: #f0f4fb; --surface: #ffffff; --surface2: #e8edf7;
+    --border: #d0d8e8; --accent: #2563eb; --accent2: #3b82f6;
+    --accent-glow: rgba(37,99,235,0.1); --text: #111827;
+    --muted: #5a6580; --tag: #dbeafe; --tag-text: #1d4ed8;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; overflow-x: hidden; }
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    height: var(--nav-h); background: rgba(10,12,16,0.85);
+    backdrop-filter: blur(16px); border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; padding: 0 2rem; gap: 2rem;
+  }
+  [data-theme="light"] nav { background: rgba(240,244,251,0.88); }
+  .nav-brand { font-family:'Syne',sans-serif; font-weight:800; font-size:1.2rem; color:var(--accent2); text-decoration:none; display:flex; align-items:center; gap:.5rem; letter-spacing:-.02em; white-space:nowrap; }
+  .nav-brand span { color:var(--text); }
+  .nav-links { display:flex; align-items:center; gap:.25rem; list-style:none; flex:1; }
+  .nav-links > li { position:relative; }
+  .nav-links a { font-family:'DM Sans',sans-serif; font-size:.875rem; font-weight:500; color:var(--muted); text-decoration:none; padding:.45rem .75rem; border-radius:8px; transition:color .2s,background .2s; display:block; white-space:nowrap; }
+  .nav-links a:hover { color:var(--text); background:var(--surface2); }
+  .nav-links a.active { color:var(--accent2); }
+  .dropdown { position:relative; }
+  .dropdown-toggle { cursor:pointer; user-select:none; }
+  .dropdown-menu { display:none; position:absolute; top:calc(100% + 8px); left:0; background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:.5rem; min-width:200px; box-shadow:0 20px 60px rgba(0,0,0,.4); }
+  .dropdown:hover .dropdown-menu { display:block; }
+  .dropdown-menu a { font-size:.82rem; padding:.4rem .7rem; border-radius:7px; }
+  .nav-right { margin-left:auto; display:flex; align-items:center; gap:.75rem; }
+  .theme-btn { background:var(--surface2); border:1px solid var(--border); color:var(--text); width:36px; height:36px; border-radius:8px; cursor:pointer; font-size:1rem; display:flex; align-items:center; justify-content:center; transition:background .2s; }
+  .theme-btn:hover { background:var(--surface); }
+  .hamburger { display:none; flex-direction:column; gap:5px; background:none; border:none; cursor:pointer; padding:.5rem; }
+  .hamburger span { display:block; width:22px; height:2px; background:var(--text); border-radius:2px; }
+  .mobile-menu { display:none; position:fixed; top:var(--nav-h); left:0; right:0; background:var(--surface); border-bottom:1px solid var(--border); padding:1rem 1.5rem; z-index:99; max-height:calc(100vh - var(--nav-h)); overflow-y:auto; }
+  .mobile-menu.open { display:block; }
+  .mobile-menu a { display:block; padding:.5rem; color:var(--muted); text-decoration:none; border-radius:8px; transition:color .2s,background .2s; }
+  .mobile-menu a:hover { color:var(--text); background:var(--surface2); }
+  .mobile-section { font-size:.75rem; text-transform:uppercase; letter-spacing:.08em; color:var(--muted); margin:1rem 0 .5rem; padding:0 .5rem; }
+  main { padding: calc(var(--nav-h) + 2rem) 2rem 2rem; max-width:800px; margin:0 auto; }
+  .page-hero { margin-bottom:3rem; opacity:0; animation:fadeInUp .6s .2s forwards; }
+  .breadcrumb { font-size:.85rem; color:var(--muted); margin-bottom:.75rem; }
+  .breadcrumb a { color:var(--accent2); text-decoration:none; }
+  .breadcrumb a:hover { text-decoration:underline; }
+  .page-eyebrow { font-size:.75rem; text-transform:uppercase; letter-spacing:.08em; color:var(--accent2); margin-bottom:.5rem; }
+  .page-title { font-family:'Syne',sans-serif; font-size:2.5rem; font-weight:800; line-height:1.2; margin-bottom:.75rem; }
+  .page-desc { font-size:1.1rem; color:var(--muted); line-height:1.6; }
+  .case-study { text-align:center; margin-bottom:3rem; opacity:0; animation:fadeInUp .6s forwards; }
+  .case-study-title { font-family:'Syne',sans-serif; font-size:1.8rem; font-weight:700; margin-bottom:1rem; color:var(--text); }
+  .case-study-desc { font-size:1.1rem; color:var(--muted); line-height:1.6; margin-bottom:2rem; }
+  .case-study-link { color:var(--accent2); text-decoration:none; font-weight:500; }
+  .case-study-link:hover { text-decoration:underline; }
+  .video-container { position:relative; width:100%; padding-bottom:56.25%; height:0; overflow:hidden; border-radius:12px; margin:2rem 0; }
+  .video-container iframe { position:absolute; top:0; left:0; width:100%; height:100%; border:none; }
+  footer {
+    margin-top:4rem; padding:2rem 0; border-top:1px solid var(--border);
+    display:flex; justify-content:space-between; align-items:flex-start; gap:2rem;
+    flex-wrap:wrap;
+  }
+  .footer-brand { flex:1; min-width:250px; }
+  .footer-col { flex:1; min-width:150px; }
+  .footer-col h4 { font-family:'Syne',sans-serif; font-size:.9rem; font-weight:600; margin-bottom:.75rem; color:var(--text); }
+  .footer-col ul { list-style:none; }
+  .footer-col li { margin-bottom:.5rem; }
+  .footer-col a { color:var(--muted); text-decoration:none; font-size:.85rem; transition:color .2s; }
+  .footer-col a:hover { color:var(--accent2); }
+  .footer-bottom { margin-top:2rem; padding-top:2rem; border-top:1px solid var(--border); display:flex; justify-content:space-between; align-items:center; font-size:.85rem; color:var(--muted); }
+  .scroll-top { position:fixed; bottom:2rem; right:2rem; background:var(--accent2); color:var(--surface); border:none; width:48px; height:48px; border-radius:50%; cursor:pointer; font-size:1rem; opacity:0; transform:translateY(20px); transition:opacity .3s,transform .3s; z-index:99; }
+  .scroll-top.visible { opacity:1; transform:translateY(0); }
+  @keyframes fadeInUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
+  @media(max-width:900px){
+    .nav-links { display: none; }
+    .hamburger { display: flex; }
+    main { padding: calc(var(--nav-h) + 2rem) 1rem 2rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a class="nav-brand" href="../index.html">⚙ <span>WinVault</span></a>
+
+  <ul class="nav-links">
+    <li><a href="../index.html">Home</a></li>
+    <li><a href="../case-studies.html">Case Studies</a></li>
+    <li class="dropdown">
+      <a class="dropdown-toggle">📝 Parts ▾</a>
+      <div class="dropdown-menu">
+        <a href="part1.html" class="active">Part 1: Domain Controller</a>
+        <a href="part2.html">Part 2: Adding Users</a>
+        <a href="part3.html">Part 3: DHCP Server</a>
+        <a href="part4.html">Part 4: File Sharing</a>
+        <a href="part5.html">Part 5: RAID</a>
+        <a href="part6.html">Part 6: Web Server</a>
+        <a href="part7.html">Part 7: Group Policy</a>
+        <a href="part8.html">Part 8: Windows Deployment Services</a>
+      </div>
+    </li>
+  </ul>
+
+  <div class="nav-right">
+    <button class="theme-btn" id="themeBtn">☾</button>
+    <button class="hamburger" id="hamburger"><span></span><span></span><span></span></button>
+  </div>
+</nav>
+
+<!-- MAIN -->
+<main>
+<div class="page-hero fade-in">
+  <div class="breadcrumb"><a href="../index.html">Home</a> / <a href="../case-studies.html">Case Studies</a> / Part 1</div>
+  <div class="page-eyebrow">📝 PART 1</div>
+  <h1 class="page-title">DOMAIN CONTROLLER</h1>
+  <p class="page-desc">Configure the server as a Domain Controller using Active Directory Domain Services. Set the domain name to winvault.local, verify DNS integration, and make sure client workstations can join the domain successfully.</p>
+</div>
+
+<div class="case-study">
+  <h2 class="case-study-title">PART 1: DOMAIN CONTROLLER</h2>
+  <p class="case-study-desc">
+    Configure the server as a Domain Controller using Active Directory Domain Services.
+    Set the domain name to <strong>winvault.local</strong>, verify DNS integration, and make sure
+    client workstations can join the domain successfully.<br>
+    Case Study Link: <a href="https://youtu.be/U2XYNXHr7kc" target="_blank" class="case-study-link">https://youtu.be/U2XYNXHr7kc</a>
+  </p>
+  <div class="video-container">
+    <iframe src="https://www.youtube.com/embed/U2XYNXHr7kc" title="PART 1: DOMAIN CONTROLLER" allowfullscreen></iframe>
+  </div>
+</div>
+
+</main>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-brand">
+    <a class="nav-brand" href="../index.html" style="font-size:1.1rem">⚙ <span>WinVault</span></a>
+    <p>My collection of Windows OS and Server installation videos — created for BSIT-S-2A and IT students.</p>
+  </div>
+  <div class="footer-col">
+    <h4>Quick Links</h4>
+    <ul>
+      <li><a href="../index.html">Home</a></li>
+      <li><a href="../case-studies.html">Case Studies</a></li>
+      <li><a href="part2.html">Part 2</a></li>
+      <li><a href="part8.html">Part 8</a></li>
+    </ul>
+  </div>
+  <div class="footer-col">
+    <h4>Navigation</h4>
+    <ul>
+      <li><a href="../case-studies.html">← Back to Series</a></li>
+      <li><a href="part2.html">Next →</a></li>
+    </ul>
+  </div>
+  <div class="footer-bottom">
+    <span>© 2026 Sedriel H. Navasca. BSIT-S-2A. All rights reserved. Created for educational purposes.</span>
+    <a href="../index.html" style="color:var(--accent2);text-decoration:none;font-size:.8rem">⇧ Back to top</a>
+  </div>
+</footer>
+
+<!-- SCROLL TOP -->
+<button class="scroll-top" id="scrollTop">⇧</button>
+
+<script>
+  // Theme toggle
+  const themeBtn = document.getElementById('themeBtn');
+  themeBtn.addEventListener('click',()=>{
+    const h=document.documentElement,d=h.getAttribute('data-theme')==='dark';
+    h.setAttribute('data-theme',d?'light':'dark');
+    themeBtn.textContent=d?'☀':'☾';
+  });
+  // Mobile menu
+  const hamburger=document.getElementById('hamburger'),mobileMenu=document.getElementById('mobileMenu');
+  hamburger.addEventListener('click',()=>mobileMenu.classList.toggle('open'));
+  // Scroll to top
+  const scrollTop=document.getElementById('scrollTop');
+  scrollTop.addEventListener('click',()=>window.scrollTo({top:0,behavior:'smooth'}));
+  window.addEventListener('scroll',()=>{
+    scrollTop.classList.toggle('visible',window.scrollY>200);
+  });
+  // Fade in animation
+  document.querySelectorAll('.fade-in').forEach(el=>el.style.opacity='1');
+</script>
+
+</body>
+</html>
